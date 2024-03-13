@@ -8,24 +8,7 @@ local error = vim.health.error or vim.health.report_error
 
 local M = {}
 
-function M.check()
-  start("Checking LSP servers installation status")
-
-  for server_name, config in pairs(lspconfig.configs) do
-    if config.cmd then
-      local cmd = config.cmd[1]
-      local is_installed, version = asdf.tool_installed_version(cmd)
-
-      if is_installed then
-        ok(server_name .. " is installed. Version: " .. version)
-      else
-        error(server_name .. " is NOT installed.")
-      end
-    end
-  end
-end
-
-function asdf.tool_installed_version(tool_name)
+local function tool_installed_version(tool_name)
   local _, tools, exit_code = asdf.tool_list(tool_name)
 
   if exit_code == 0 and tools and #tools > 0 then
@@ -39,6 +22,24 @@ function asdf.tool_installed_version(tool_name)
 
   return false, nil
 end
+
+function M.check()
+  start("Checking LSP servers installation status")
+
+  for server_name, config in pairs(lspconfig.configs) do
+    if config.cmd then
+      local cmd = config.cmd[1]
+      local is_installed, version = tool_installed_version(cmd)
+
+      if is_installed then
+        ok(server_name .. " is installed. Version: " .. version)
+      else
+        error(server_name .. " is NOT installed.")
+      end
+    end
+  end
+end
+
 
 return M
 
